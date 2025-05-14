@@ -7,7 +7,7 @@ use App\Http\Requests\PaymentRequest;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
+use Sentry\Laravel\Integration;
 class PaymentController extends Controller
 {
     /**
@@ -16,7 +16,7 @@ class PaymentController extends Controller
     public function index(): JsonResponse
     {
         $payments = Payment::with(['sender', 'receiver'])->get();
-        return response()->json($payments);
+        return response()->json(['data' => $payments]);
     }
 
     /**
@@ -24,15 +24,19 @@ class PaymentController extends Controller
      */
     public function store(PaymentRequest $request): JsonResponse
     {
-        $payment = Payment::create($request->validated());
-
-        if ($payment->type === 'convert') {
-            // TODO: Implement currency conversion logic
-            // This is where you would integrate with a currency conversion service
-            // For example: ExchangeRate-API, Open Exchange Rates, etc.
+        try {
+            
+            $payment = Payment::create($request->validated());
+            // Raise error for testing
+            throw new \Exception('Payment test error');
+            
+            return response()->json(['data' => $payment], 201);
+        } catch (\Exception $e) {
+            // Log the error with Sentry
+            \Sentry\captureException($e);
+            
+            return response()->json(['error' => 'Failed to create payment'], 500);
         }
-
-        return response()->json($payment, 201);
     }
 
     /**
@@ -40,7 +44,12 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment): JsonResponse
     {
-        return response()->json($payment->load(['sender', 'receiver']));
+        // Debug: Check the loaded payment with relationships
+        dump('Payment details:', $payment->toArray());
+        dump('Sender details:', $payment->sender);
+        dump('Receiver details:', $payment->receiver);
+        
+        return response()->json(['data' => $payment->load(['sender', 'receiver'])]);
     }
 
     /**
@@ -48,8 +57,12 @@ class PaymentController extends Controller
      */
     public function update(PaymentRequest $request, Payment $payment): JsonResponse
     {
-        $payment->update($request->validated());
-        return response()->json($payment);
+        try {
+            $payment->update($request->validated());
+            return response()->json(['data' => $payment]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update payment'], 500);
+        }
     }
 
     /**
