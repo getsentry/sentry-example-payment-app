@@ -23,10 +23,11 @@ composer install
 npm install
 ```
 
-4. Create and configure your environment file:
+4. Create, configure your environment file and then run the migrations:
 
 ```bash
 cp .env.example .env
+php artisan migrate
 php artisan key:generate
 ```
 
@@ -35,12 +36,6 @@ php artisan key:generate
 ```
 DB_CONNECTION=sqlite
 DB_DATABASE=/absolute/path/to/database.sqlite
-```
-
-6. Run the migrations:
-
-```bash
-php artisan migrate
 ```
 
 7. Start the development server:
@@ -188,8 +183,6 @@ The API provides a complete set of endpoints for managing payments:
 - `GET /api/v1/payments` - List all payments
 - `POST /api/v1/payments` - Create a new payment
 - `GET /api/v1/payments/{id}` - Get a specific payment
-- `PUT /api/v1/payments/{id}` - Update a payment
-- `DELETE /api/v1/payments/{id}` - Delete a payment
 
 #### Payment Types
 
@@ -234,8 +227,8 @@ This will remove all dummy users and their associated payments.
 
 The application is built with:
 
-- Laravel 10.x
-- PHP 8.1+
+- Laravel 12.13.x
+- PHP 8.4.7
 - SQLite (can be changed to MySQL/PostgreSQL)
 - Vite for asset compilation
 - Laravel Telescope for debugging and monitoring
