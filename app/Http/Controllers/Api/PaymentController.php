@@ -7,7 +7,7 @@ use App\Http\Requests\PaymentRequest;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Sentry\Laravel\Integration;
+
 class PaymentController extends Controller
 {
     /**
@@ -27,14 +27,9 @@ class PaymentController extends Controller
         try {
             
             $payment = Payment::create($request->validated());
-            // Raise error for testing
-            throw new \Exception('Payment test error');
-            
+
             return response()->json(['data' => $payment], 201);
         } catch (\Exception $e) {
-            // Log the error with Sentry
-            \Sentry\captureException($e);
-            
             return response()->json(['error' => 'Failed to create payment'], 500);
         }
     }
